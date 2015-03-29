@@ -23,7 +23,6 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -33,7 +32,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dj_eventbrite',
+    'django.contrib.humanize',
+    'django_eventbrite',
+    'schedule',
+    'pagedown',
+    'djcourses',
+    'permission',
+    'asylum.classes',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -44,6 +49,16 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'permission.backends.PermissionBackend',
 )
 
 ROOT_URLCONF = 'asylum.urls'
@@ -66,7 +81,11 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
+
+CURRENCIES = ('USD', )
+
+PHONENUMBER_DEFAULT_REGION='US'
 
 USE_I18N = True
 
@@ -74,11 +93,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR,"asylum/static/"),
+    )
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/home/steve/work/asylum/classes/2015_django/src/asylum/static'
 
 try:
     from local_settings import *
