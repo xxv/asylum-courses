@@ -65,9 +65,13 @@ class ObjPermModelAdmin(admin.ModelAdmin):
 
 @admin.register(Person, site=admin_site)
 class PersonAdmin(ObjPermModelAdmin):
-    search_fields = ['first_name', 'last_name', 'phone_number']
+    search_fields = (
+        'first_name',
+        'last_name',
+        'phone_number',
+        )
     permissioned_fields = (
-        ('classes.change_user', ('user',)),
+            ('classes.change_user', ('user',)),
         )
 
 @admin.register(Instructor, site=admin_site)
@@ -75,7 +79,14 @@ class InstructorAdmin(PersonAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    search_fields = ['first_name', 'last_name', 'bio', 'phone_number']
+    search_fields = (
+        'first_name',
+        'last_name',
+        'bio',
+        'phone_number',
+        'user__username',
+        'user__email'
+        )
     admin_fields = (
                 'employment_type',
                 'payment_type',
@@ -115,25 +126,29 @@ class RoomAdmin(admin.ModelAdmin):
             models.TextField: {'widget': AdminPagedownWidget },
     }
 
-@admin.register(Session)
-class SessionAdmin(ObjPermModelAdmin):
-    search_fields = ['name', 'description']
+class AbsCourseAdmin(ObjPermModelAdmin):
+    list_display = ('name', 'instructor_names')
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    search_fields = ('name', 'description', 'instructors')
+    search_fields = (
+        'name',
+        'description',
+        'instructors__first_name',
+        'instructors__last_name',
+        )
 
 @admin.register(Session, site=admin_site)
 class SessionAdmin(AbsCourseAdmin):
     readonly_fields = ('event',)
+    list_display = (
+        'name',
+        'instructor_names',
+        'eb_id',
+        )
 
-@admin.register(Course)
-class CourseAdmin(DjangoObjectActions, ObjPermModelAdmin):
-    self_edit_allowed = ()
-    formfield_overrides = {
-            models.TextField: {'widget': AdminPagedownWidget },
-    }
-    search_fields = ['name', 'description']
+@admin.register(Course, site=admin_site)
+class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     def make_session(self, request, obj):
         session=obj.create_session()
         return redirect('/admin/classes/session/%d/' % session.id)

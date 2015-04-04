@@ -95,6 +95,10 @@ class AbsCourse(models.Model):
     material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True)
     instructors = models.ManyToManyField(Instructor)
 
+    def instructor_names(self):
+        return ", ".join(map(lambda i: i.name(), self.instructors.all()))
+    instructor_names.short_description='Instructors'
+
     def __str__(self):
         return self.name
 
@@ -102,6 +106,11 @@ class AbsCourse(models.Model):
         abstract = True
 
 class Course(AbsCourse):
+    """A top-level, non-scheduled unit of instruction.
+
+    This can be thought of as a template for a Session, which is an instance of
+    a Course.
+    """
     def set_from_event(self, event):
         self.name = event.name
         self.description = event.description
@@ -128,6 +137,12 @@ class Course(AbsCourse):
 class Session(AbsCourse):
     course = models.ForeignKey(Course)
     event = models.OneToOneField(Event, null=True)
+
+    def eb_id(self):
+        if not self.event:
+            return None
+        return self.event.eb_id
+    eb_id.short_description = 'Eventbrite ID'
 
     def set_from_event(self, event):
         self.name = event.name
