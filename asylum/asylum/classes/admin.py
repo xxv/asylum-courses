@@ -21,17 +21,20 @@ class ObjPermModelAdmin(admin.ModelAdmin):
         codename = get_permission_codename('change', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename), obj)
 
+@admin.register(Person)
 class PersonAdmin(ObjPermModelAdmin):
     search_fields = ['first_name', 'last_name', 'phone_number']
     permissioned_fields = (
         ('classes.change_user', ('user',)),
         )
 
+@admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
 
+@admin.register(Instructor)
 class InstructorAdmin(PersonAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
@@ -70,6 +73,7 @@ class InstructorAdmin(PersonAdmin):
             )
         return fieldsets
 
+@admin.register(Session)
 class SessionAdmin(ObjPermModelAdmin):
     search_fields = ['name', 'description']
     formfield_overrides = {
@@ -77,6 +81,7 @@ class SessionAdmin(ObjPermModelAdmin):
     }
     readonly_fields = ('event',)
 
+@admin.register(Course)
 class CourseAdmin(DjangoObjectActions, ObjPermModelAdmin):
     self_edit_allowed = ()
     formfield_overrides = {
@@ -98,11 +103,9 @@ def make_course(modeladmin, request, queryset):
 
 make_course.description='Convert Event into a Course'
 
+admin.site.unregister(django_eventbrite.models.Event)
+
+@admin.register(django_eventbrite.models.Event)
 class EventAdmin(django_eventbrite.admin.EventAdmin):
     actions=[make_course]
 
-admin.site.register(Course, CourseAdmin)
-admin.site.register(Session, SessionAdmin)
-admin.site.register(Instructor, InstructorAdmin)
-admin.site.register(Room, RoomAdmin)
-admin.site.register(Person, PersonAdmin)

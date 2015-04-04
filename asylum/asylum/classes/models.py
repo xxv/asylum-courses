@@ -106,7 +106,7 @@ class Course(AbsCourse):
         self.name = event.name
         self.description = event.description
         if event.tickets:
-            self.ticket_price = event.tickets[0].cost
+            self.ticket_price = event.tickets.all()[0].cost
 
     def create_session(self):
         session = Session()
