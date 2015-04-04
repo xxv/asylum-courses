@@ -36,9 +36,9 @@ INSTALLED_APPS = (
     'django_eventbrite',
     'schedule',
     'pagedown',
-    'djcourses',
     'permission',
     'asylum.classes',
+    'django_object_actions',
 )
 
 MIDDLEWARE_CLASSES = (
