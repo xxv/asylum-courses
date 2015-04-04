@@ -1,11 +1,42 @@
-from django_object_actions import DjangoObjectActions
 from .models import Course, Instructor, Person, Session, Room
 from django.contrib import admin
 from django.contrib.auth import get_permission_codename
 from django.db import models
-import django_eventbrite
-from pagedown.widgets import AdminPagedownWidget
 from django.shortcuts import redirect
+from django.utils.module_loading import autodiscover_modules
+from django_eventbrite import admin as eb_admin
+from django_object_actions import DjangoObjectActions
+from pagedown.widgets import AdminPagedownWidget
+import django_eventbrite
+
+class AsylumAdminSite(admin.AdminSite):
+    site_header = "Artisan's Asylum Courses"
+
+admin_site = AsylumAdminSite()
+
+def steal_registrations_from_stock_admin_site():
+    """Steals all the registrations from the admin site and reregisters them here
+
+    Lots of things register with the standard admin page automatically when the
+    autodiscovery is called. This is great ... except when using a custom
+    AdminSite. There doesn't seem to be a clean way to do this The Right Way,
+    so this hack is in place. This lets them all do their registration thing,
+    then unregisters them from the stock admin and re-registers them here.
+
+    """
+    autodiscover_modules('admin')
+
+    for k,v in admin.site._registry.copy().iteritems():
+        try:
+            admin.site.unregister(k)
+        except admin.sites.NotRegistered:
+            pass # Alright. We were stealing them anyhow
+        try:
+            admin_site.register(k,type(v))
+        except admin.sites.AlreadyRegistered:
+            pass # Also alright. No honor amongst thieves
+
+steal_registrations_from_stock_admin_site()
 
 class ObjPermModelAdmin(admin.ModelAdmin):
     """Admin for models that use object-based permissions
@@ -32,14 +63,14 @@ class ObjPermModelAdmin(admin.ModelAdmin):
         return request.user.has_perm("%s.%s" % (opts.app_label, codename), obj)
 
 
-@admin.register(Person)
+@admin.register(Person, site=admin_site)
 class PersonAdmin(ObjPermModelAdmin):
     search_fields = ['first_name', 'last_name', 'phone_number']
     permissioned_fields = (
         ('classes.change_user', ('user',)),
         )
 
-@admin.register(Instructor)
+@admin.register(Instructor, site=admin_site)
 class InstructorAdmin(PersonAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
@@ -78,7 +109,7 @@ class InstructorAdmin(PersonAdmin):
             )
         return fieldsets
 
-@admin.register(Room)
+@admin.register(Room, site=admin_site)
 class RoomAdmin(admin.ModelAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
@@ -90,6 +121,10 @@ class SessionAdmin(ObjPermModelAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
+    search_fields = ('name', 'description', 'instructors')
+
+@admin.register(Session, site=admin_site)
+class SessionAdmin(AbsCourseAdmin):
     readonly_fields = ('event',)
 
 @admin.register(Course)
@@ -115,12 +150,19 @@ def make_course(modeladmin, request, queryset):
 make_course.description='Convert Event into a Course'
 
 # Override the django_eventbrite model to allow for course conversion.
-admin.site.unregister(django_eventbrite.models.Event)
+try:
+    admin.site.unregister(django_eventbrite.models.Event)
+except admin.sites.NotRegistered:
+    pass # that's OK
 
-@admin.register(django_eventbrite.models.Event)
-class EventAdmin(django_eventbrite.admin.EventAdmin):
+try:
+    admin_site.unregister(django_eventbrite.models.Event)
+except admin.sites.NotRegistered:
+    pass # that's OK
+
+@admin.register(django_eventbrite.models.Event, site=admin_site)
+class EventAdmin(eb_admin.EventAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
     actions=[make_course]
-
