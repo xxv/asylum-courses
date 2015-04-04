@@ -18,7 +18,7 @@ class Person(models.Model):
     last_name = models.CharField(max_length=100)
     user = models.OneToOneField(User, null=True, blank=True)
     phone_number = PhoneNumberField(blank=True)
-    prefered_contact_method = models.CharField(max_length=10, choices=CONTACT_METHOD_TYPES)
+    prefered_contact_method = models.CharField(max_length=10, default='email', choices=CONTACT_METHOD_TYPES)
     emergency_contact = models.ForeignKey('Person', null=True, blank=True)
 
     def name(self):

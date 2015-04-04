@@ -8,6 +8,16 @@ from pagedown.widgets import AdminPagedownWidget
 from django.shortcuts import redirect
 
 class ObjPermModelAdmin(admin.ModelAdmin):
+    """Admin for models that use object-based permissions
+
+    Also supports permissioned fields, which takes a tuple/list of 2-tuples
+    that makes fields readonly unless the requesting user has the given
+    permission:
+
+    permissioned_fields = (
+        ('classes.change_user', ('user','other_field')),
+        )
+    """
     permissioned_fields = ()
     def get_readonly_fields(self, request, obj=None):
         ro = list(super(admin.ModelAdmin, self).get_readonly_fields(request, obj))
@@ -21,18 +31,13 @@ class ObjPermModelAdmin(admin.ModelAdmin):
         codename = get_permission_codename('change', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename), obj)
 
+
 @admin.register(Person)
 class PersonAdmin(ObjPermModelAdmin):
     search_fields = ['first_name', 'last_name', 'phone_number']
     permissioned_fields = (
         ('classes.change_user', ('user',)),
         )
-
-@admin.register(Room)
-class RoomAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-            models.TextField: {'widget': AdminPagedownWidget },
-    }
 
 @admin.register(Instructor)
 class InstructorAdmin(PersonAdmin):
@@ -73,6 +78,12 @@ class InstructorAdmin(PersonAdmin):
             )
         return fieldsets
 
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+            models.TextField: {'widget': AdminPagedownWidget },
+    }
+
 @admin.register(Session)
 class SessionAdmin(ObjPermModelAdmin):
     search_fields = ['name', 'description']
@@ -103,9 +114,13 @@ def make_course(modeladmin, request, queryset):
 
 make_course.description='Convert Event into a Course'
 
+# Override the django_eventbrite model to allow for course conversion.
 admin.site.unregister(django_eventbrite.models.Event)
 
 @admin.register(django_eventbrite.models.Event)
 class EventAdmin(django_eventbrite.admin.EventAdmin):
+    formfield_overrides = {
+            models.TextField: {'widget': AdminPagedownWidget },
+    }
     actions=[make_course]
 
