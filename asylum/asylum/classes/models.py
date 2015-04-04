@@ -29,18 +29,18 @@ class Person(models.Model):
     class Meta:
         verbose_name_plural='People'
         permissions = (
-                ('change_user', 'Can change user association'),
-            )
+            ('change_user', 'Can change user association'),
+        )
 
 class Instructor(Person):
     PAYMENT_TYPES = (
-            ('check', 'check'),
-            ('deposit', 'direct deposit'),
+        ('check', 'check'),
+        ('deposit', 'direct deposit'),
     )
 
     EMPLOYMENT_TYPES = (
-            ('w2', 'W2'),
-            ('1099', '1099'),
+        ('w2', 'W2'),
+        ('1099', '1099'),
     )
     bio = models.TextField(blank=True)
     photo = models.ImageField(blank=True)
@@ -59,8 +59,8 @@ class Instructor(Person):
             )
     class Meta:
         permissions = (
-                ('admin_instructor', 'Can change instructor administrative information'),
-                )
+            ('admin_instructor', 'Can change instructor administrative information'),
+        )
 
 
 class Room(models.Model):
@@ -73,8 +73,8 @@ class Room(models.Model):
 
 class AbsCourse(models.Model):
     MATERIAL_COST_COLLECTION = (
-            ('ticket', 'included in ticket price'),
-            ('instructor', 'collected by instructor at first class'),
+        ('ticket', 'included in ticket price'),
+        ('instructor', 'collected by instructor at first class'),
     )
     name = models.CharField(max_length=255)
     description = models.TextField()

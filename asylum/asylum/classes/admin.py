@@ -11,6 +11,8 @@ import django_eventbrite
 
 class AsylumAdminSite(admin.AdminSite):
     site_header = "Artisan's Asylum Courses"
+    site_title = "Asylum Courses"
+    index_title = "Course Administration"
 
 admin_site = AsylumAdminSite()
 
