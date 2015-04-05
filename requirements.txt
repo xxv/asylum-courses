@@ -17,6 +17,7 @@ django-phonenumber-field==0.7.2
 django-scheduler==0.7.4
 eventbrite==3.0.4
 future==0.14.3
+html2text==2015.2.18
 icalendar==3.9.0
 ipython==3.0.0
 phonenumbers==7.0.4

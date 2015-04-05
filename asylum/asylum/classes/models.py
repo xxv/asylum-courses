@@ -7,6 +7,7 @@ from permission import add_permission_logic
 from permission.logics import AuthorPermissionLogic
 from permission.logics import CollaboratorsPermissionLogic
 from phonenumber_field.modelfields import PhoneNumberField
+from html2text import HTML2Text
 
 class Person(models.Model):
     CONTACT_METHOD_TYPES = (
@@ -113,7 +114,8 @@ class Course(AbsCourse):
     """
     def set_from_event(self, event):
         self.name = event.name
-        self.description = event.description
+        h=HTML2Text()
+        self.description = h.handle(event.description)
         if event.tickets:
             self.ticket_price = event.tickets.all()[0].cost
 
