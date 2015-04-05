@@ -135,8 +135,19 @@ class Course(AbsCourse):
         return self.name
 
 class Session(AbsCourse):
+    STATE_DRAFT = 'draft'
+    STATE_UNAPPROVED = 'unapproved'
+    STATE_PUBLIC = 'public'
+    STATE_CANCELED = 'canceled'
+    STATES = (
+        (STATE_DRAFT, 'Draft'),
+        (STATE_UNAPPROVED, 'Needs Approval'),
+        (STATE_PUBLIC, 'Public'),
+        (STATE_CANCELED, 'Canceled'),
+    )
     course = models.ForeignKey(Course)
     event = models.OneToOneField(Event, null=True)
+    state = models.CharField(max_length=10, default=STATE_DRAFT, choices=STATES)
 
     def eb_id(self):
         if not self.event:
@@ -144,12 +155,45 @@ class Session(AbsCourse):
         return self.event.eb_id
     eb_id.short_description = 'Eventbrite ID'
 
+    def can_submit_for_approval(self, request):
+        return self.state in (self.STATE_DRAFT,)
+
+    def submit_for_approval(self, request):
+        if self.can_submit_for_approval(request):
+            self.state = self.STATE_UNAPPROVED
+            self.save()
+
+    def can_publish(self, request):
+        has_perm = request.user.has_perm('classes.change_state')
+        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_UNAPPROVED)
+
+    def publish(self, request):
+        if self.can_publish(request):
+            self.state = self.STATE_PUBLIC
+            self.save()
+            # publish to eventbrite here
+
+    def can_cancel(self, request):
+        has_perm = request.user.has_perm('classes.change_state')
+        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_UNAPPROVED, self.STATE_PUBLIC)
+
+    def cancel(self, request):
+        if self.can_cancel(request):
+            self.state = self.STATE_CANCELED
+            self.save()
+            # unpublish from eventbrite here
+
     def set_from_event(self, event):
         self.name = event.name
         self.description = event.description
         if event.tickets:
             self.ticket_price = event.tickets[0].cost
         self.event = event
+
+    class Meta:
+        permissions = (
+            ('change_state', 'Change session approval state'),
+        )
 
 # Instructors can edit their own profile
 add_permission_logic(Instructor, AuthorPermissionLogic(field_name='user'))
@@ -165,6 +209,6 @@ add_permission_logic(Session, CollaboratorsPermissionLogic(
     field_name='instructors__user',
     any_permission=False,
     change_permission=True,
-    delete_permission=False,
+    delete_permission=True,
     ))
 

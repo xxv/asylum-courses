@@ -141,19 +141,55 @@ class AbsCourseAdmin(ObjPermModelAdmin):
         )
 
 @admin.register(Session, site=admin_site)
-class SessionAdmin(AbsCourseAdmin):
+class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
     readonly_fields = ('event',)
+    permissioned_fields = (
+        ('classes.change_state', ('state',)),
+    )
     list_display = (
         'name',
         'instructor_names',
         'eb_id',
-        )
+        'state',
+    )
+    objectactions = ('submit_for_approval', 'publish', 'cancel')
+    def get_object_actions(self, request, context, **kwargs):
+        objectactions = []
+        if 'original' in context:
+            obj = context['original']
+            if obj.can_submit_for_approval(request):
+                objectactions.append('submit_for_approval')
+            if obj.can_publish(request):
+                objectactions.append('publish')
+            if obj.can_cancel(request):
+                objectactions.append('cancel')
+        return objectactions
+
+    def submit_for_approval(self, request, obj):
+        obj.submit_for_approval(request)
+        return redirect('admin:classes_session_changelist')
+    submit_for_approval.label='Submit for Approval'
+    submit_for_approval.short_description = 'Submit this session to be approved by Asylum staff'
+
+    def publish(self, request, obj):
+        if request.user.has_perm('classes.change_state'):
+            obj.publish(request)
+            return redirect('admin:classes_session_changelist')
+    publish.label = 'Publish'
+    publish.short_description = 'Publish on site and create Eventbrite event'
+
+    def cancel(self, request, obj):
+        if request.user.has_perm('classes.change_state'):
+            obj.cancel(request)
+            return redirect('admin:classes_session_changelist')
+    cancel.label = 'Cancel'
+    cancel.short_description = 'Remove from site and cancel Eventbrite event'
 
 @admin.register(Course, site=admin_site)
 class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     def make_session(self, request, obj):
         session=obj.create_session()
-        return redirect('/admin/classes/session/%d/' % session.id)
+        return redirect('admin:classes_session_change', args=(session.id,))
     make_session.label='Create Session'
     make_session.short_description='Create session of course'
     objectactions = ('make_session',)
