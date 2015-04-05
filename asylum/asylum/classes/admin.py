@@ -1,4 +1,4 @@
-from .models import Course, Instructor, Person, Session, Room
+from .models import Course, Instructor, Person, Session, Room, TemplateText
 from django.contrib import admin
 from django.contrib.auth import get_permission_codename
 from django.db import models
@@ -208,6 +208,16 @@ def make_course(modeladmin, request, queryset):
         c.save()
 
 make_course.description='Convert Event into a Course'
+
+@admin.register(TemplateText, site=admin_site)
+class TemplateTextAdmin(admin.ModelAdmin):
+    list_display = (
+        'keyword',
+        'text_as_html',
+    )
+    formfield_overrides = {
+            models.TextField: {'widget': AdminPagedownWidget },
+    }
 
 # Override the django_eventbrite model to allow for course conversion.
 try:

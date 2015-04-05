@@ -8,6 +8,7 @@ from permission.logics import AuthorPermissionLogic
 from permission.logics import CollaboratorsPermissionLogic
 from phonenumber_field.modelfields import PhoneNumberField
 from html2text import HTML2Text
+from markdown_deux import markdown
 
 class Person(models.Model):
     CONTACT_METHOD_TYPES = (
@@ -212,6 +213,16 @@ class Session(AbsCourse):
         permissions = (
             ('change_session_state', 'Change session approval state'),
         )
+
+class TemplateText(models.Model):
+    keyword = models.SlugField(unique=True, help_text='To use this, just place this keyword in curly braces (like so {{foo}}) in your text and it will be replaced when publishing.')
+    text = models.TextField(help_text='This is the text that will be inserted')
+
+    def text_as_html(self):
+        return markdown(self.text)
+    text_as_html.allow_tags=True
+    text_as_html.short_description='Text'
+
 
 # Instructors can edit their own profile
 add_permission_logic(Instructor, AuthorPermissionLogic(field_name='user',

@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'pagedown',
     'permission',
     'asylum.classes',
+    'markdown_deux',
     'django_object_actions',
 )
 
