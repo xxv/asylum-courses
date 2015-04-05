@@ -15,7 +15,7 @@ class Person(models.Model):
         ('email', 'email'),
         ('phone', 'phone'),
         ('sms', 'text message'),
-        )
+    )
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     user = models.OneToOneField(User, null=True, blank=True)
@@ -26,8 +26,14 @@ class Person(models.Model):
     def name(self):
         return ' '.join((self.first_name, self.last_name,)).strip()
 
+    def email(self):
+        if self.user:
+            return self.user.email
+        return None
+
     def __str__(self):
         return self.name()
+
     class Meta:
         verbose_name_plural='People'
         permissions = (
@@ -55,10 +61,6 @@ class Instructor(Person):
                 validators.MaxValueValidator(100),
                 ]
             )
-    def email(self):
-        if self.user:
-            return self.user.email
-        return None
 
     class Meta:
         permissions = (
