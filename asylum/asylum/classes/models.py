@@ -93,7 +93,7 @@ class AbsCourse(models.Model):
     room = models.ManyToManyField(Room, null=True)
     ticket_price = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
     material_cost = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
-    material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True)
+    material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True, blank=True)
     instructors = models.ManyToManyField(Instructor)
 
     def instructor_names(self):
