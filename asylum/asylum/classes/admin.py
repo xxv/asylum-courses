@@ -144,7 +144,7 @@ class AbsCourseAdmin(ObjPermModelAdmin):
 class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
     readonly_fields = ('event',)
     permissioned_fields = (
-        ('classes.change_state', ('state',)),
+        ('classes.change_session_state', ('state',)),
     )
     list_display = (
         'name',
@@ -172,14 +172,14 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
     submit_for_approval.short_description = 'Submit this session to be approved by Asylum staff'
 
     def publish(self, request, obj):
-        if request.user.has_perm('classes.change_state'):
+        if request.user.has_perm('classes.change_session_state'):
             obj.publish(request)
             return redirect('admin:classes_session_changelist')
     publish.label = 'Publish'
     publish.short_description = 'Publish on site and create Eventbrite event'
 
     def cancel(self, request, obj):
-        if request.user.has_perm('classes.change_state'):
+        if request.user.has_perm('classes.change_session_state'):
             obj.cancel(request)
             return redirect('admin:classes_session_changelist')
     cancel.label = 'Cancel'
@@ -187,6 +187,9 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
 
 @admin.register(Course, site=admin_site)
 class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
+    permissioned_fields = (
+        ('classes.change_course_state', ('state',)),
+    )
     def make_session(self, request, obj):
         session=obj.create_session()
         return redirect('admin:classes_session_change', args=(session.id,))
