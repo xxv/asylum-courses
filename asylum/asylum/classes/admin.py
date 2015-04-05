@@ -81,6 +81,11 @@ class InstructorAdmin(PersonAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
+    list_display = (
+        'name',
+        'email',
+        'phone_number',
+    )
     search_fields = (
         'first_name',
         'last_name',
@@ -93,7 +98,6 @@ class InstructorAdmin(PersonAdmin):
                 'employment_type',
                 'payment_type',
                 'instructor_percentage',
-                'asylum_percentage',
                 'user',
                 'emergency_contact',
                 )
@@ -182,7 +186,7 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
         if request.user.has_perm('classes.change_session_state'):
             obj.cancel(request)
             return redirect('admin:classes_session_changelist')
-    cancel.label = 'Cancel'
+    cancel.label = 'Cancel Session'
     cancel.short_description = 'Remove from site and cancel Eventbrite event'
 
 @admin.register(Course, site=admin_site)
@@ -192,7 +196,7 @@ class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     )
     def make_session(self, request, obj):
         session=obj.create_session()
-        return redirect('admin:classes_session_change', args=(session.id,))
+        return redirect('admin:classes_session_change', session.id)
     make_session.label='Create Session'
     make_session.short_description='Create session of course'
     objectactions = ('make_session',)

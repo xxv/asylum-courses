@@ -49,15 +49,16 @@ class Instructor(Person):
     employment_type = models.CharField(max_length=10, choices=EMPLOYMENT_TYPES)
     payment_type = models.CharField(max_length=10, choices=PAYMENT_TYPES)
     instructor_percentage = models.PositiveSmallIntegerField(default=50,
+            help_text = 'The percentage of the ticket price paid to the instructor',
             validators = [
                 validators.MaxValueValidator(100),
                 ]
             )
-    asylum_percentage = models.PositiveSmallIntegerField(default=50,
-            validators = [
-                validators.MaxValueValidator(100),
-                ]
-            )
+    def email(self):
+        if self.user:
+            return self.user.email
+        return None
+
     class Meta:
         permissions = (
             ('admin_instructor', 'Can change instructor administrative information'),
@@ -79,6 +80,7 @@ class AbsCourse(models.Model):
     )
     name = models.CharField(max_length=255)
     description = models.TextField()
+    instructors = models.ManyToManyField(Instructor)
 
     student_prerequisites = models.TextField('student prerequisites',
             default='Students must be at least 18 years of age.',
@@ -91,10 +93,12 @@ class AbsCourse(models.Model):
             blank=True,
             help_text='a quiet room, a projector, the availability of certain tools, student-purchased consumables, etc.')
     room = models.ManyToManyField(Room, null=True)
+    number_of_meetings = models.PositiveSmallIntegerField(default=1)
+    min_enrollment = models.PositiveSmallIntegerField('Minimum enrollment', default=0)
+    max_enrollment = models.PositiveSmallIntegerField('Maximum enrollment')
     ticket_price = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
     material_cost = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
     material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True, blank=True)
-    instructors = models.ManyToManyField(Instructor)
 
     def instructor_names(self):
         return ", ".join(map(lambda i: i.name(), self.instructors.all()))
