@@ -105,7 +105,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/home/steve/work/asylum/classes/2015_django/src/asylum/static'
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except:
     pass
 

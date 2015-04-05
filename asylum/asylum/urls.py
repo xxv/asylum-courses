@@ -1,4 +1,4 @@
-from classes.admin import admin_site
+from asylum.classes.admin import admin_site
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',

@@ -28,7 +28,7 @@ def steal_registrations_from_stock_admin_site():
     """
     autodiscover_modules('admin')
 
-    for k,v in admin.site._registry.copy().iteritems():
+    for k,v in admin.site._registry.copy().items():
         try:
             admin.site.unregister(k)
         except admin.sites.NotRegistered:
