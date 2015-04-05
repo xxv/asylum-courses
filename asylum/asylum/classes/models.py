@@ -126,6 +126,7 @@ class Course(AbsCourse):
         self.name = event.name
         h=HTML2Text()
         self.description = h.handle(event.description)
+        self.max_enrollment = event.capacity
         if event.tickets:
             self.ticket_price = event.tickets.all()[0].cost
 

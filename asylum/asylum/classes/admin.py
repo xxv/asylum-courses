@@ -8,6 +8,7 @@ from django_eventbrite import admin as eb_admin
 from django_object_actions import DjangoObjectActions
 from pagedown.widgets import AdminPagedownWidget
 import django_eventbrite
+from django_eventbrite.utils import load_event_attendees
 
 class AsylumAdminSite(admin.AdminSite):
     site_header = "Artisan's Asylum Courses"
@@ -198,13 +199,13 @@ class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     make_session.short_description='Create session of course'
     objectactions = ('make_session',)
 
-def make_course(modeladmin, request, queryset):
+def make_courses(modeladmin, request, queryset):
     for event in queryset:
         c=Course()
         c.set_from_event(event)
         c.save()
 
-make_course.description='Convert Event into a Course'
+make_courses.description='Convert Event into a Course'
 
 @admin.register(TemplateText, site=admin_site)
 class TemplateTextAdmin(admin.ModelAdmin):
@@ -227,9 +228,46 @@ try:
 except admin.sites.NotRegistered:
     pass # that's OK
 
+
+from django.contrib import admin
+from django.contrib.admin.util import flatten_fieldsets
+
+class ReadonlyAdminMixin(object):
+    def get_readonly_fields(self, request, obj=None):
+        if self.declared_fieldsets:
+            return flatten_fieldsets(self.declared_fieldsets)
+        else:
+            return list(set(
+                [field.name for field in self.opts.local_fields] +
+                [field.name for field in self.opts.local_many_to_many]
+            ))
+
+
+class AttendeeInline(ReadonlyAdminMixin, admin.StackedInline):
+    model = django_eventbrite.models.Attendee
+    readonly_fields = (
+        'eb_id',
+        'event',
+    )
 @admin.register(django_eventbrite.models.Event, site=admin_site)
-class EventAdmin(eb_admin.EventAdmin):
+class EventAdmin(ReadonlyAdminMixin, DjangoObjectActions, eb_admin.EventAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    actions=[make_course]
+    actions=[make_courses]
+    inlines=[AttendeeInline]
+    def make_course(self, request, obj):
+        c=Course()
+        c.set_from_event(obj)
+        c.save()
+        return redirect('admin:classes_course_change', c.id)
+    make_course.label = "Create Course"
+    make_course.short_description = "Convert this event into a new Course"
+
+    def load_attendees(self, request, obj):
+        load_event_attendees(obj.eb_id)
+        return redirect('admin:django_eventbrite_event_change', obj.id)
+    load_attendees.label = "Load Attendees"
+    load_attendees.short_description = "Load the attendees from Eventbrite"
+
+    objectactions = ('make_course','load_attendees')
