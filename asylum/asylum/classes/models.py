@@ -16,15 +16,11 @@ class Person(models.Model):
         ('phone', 'phone'),
         ('sms', 'text message'),
     )
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     user = models.OneToOneField(User, null=True, blank=True)
     phone_number = PhoneNumberField(blank=True)
     prefered_contact_method = models.CharField(max_length=10, default='email', choices=CONTACT_METHOD_TYPES)
     emergency_contact = models.ForeignKey('Person', null=True, blank=True)
-
-    def name(self):
-        return ' '.join((self.first_name, self.last_name,)).strip()
 
     def email(self):
         if self.user:
@@ -32,7 +28,7 @@ class Person(models.Model):
         return None
 
     def __str__(self):
-        return self.name()
+        return self.name
 
     class Meta:
         verbose_name_plural='People'
@@ -104,7 +100,7 @@ class AbsCourse(models.Model):
     material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True, blank=True)
 
     def instructor_names(self):
-        return ", ".join(map(lambda i: i.name(), self.instructors.all()))
+        return ", ".join(map(lambda i: i.name, self.instructors.all()))
     instructor_names.short_description='Instructors'
 
     def __str__(self):

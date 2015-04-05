@@ -68,8 +68,7 @@ class ObjPermModelAdmin(admin.ModelAdmin):
 @admin.register(Person, site=admin_site)
 class PersonAdmin(ObjPermModelAdmin):
     search_fields = (
-        'first_name',
-        'last_name',
+        'name',
         'phone_number',
         )
     permissioned_fields = (
@@ -87,8 +86,7 @@ class InstructorAdmin(PersonAdmin):
         'phone_number',
     )
     search_fields = (
-        'first_name',
-        'last_name',
+        'name',
         'bio',
         'phone_number',
         'user__username',
@@ -140,8 +138,7 @@ class AbsCourseAdmin(ObjPermModelAdmin):
     search_fields = (
         'name',
         'description',
-        'instructors__first_name',
-        'instructors__last_name',
+        'instructors__name',
         )
 
 @admin.register(Session, site=admin_site)
