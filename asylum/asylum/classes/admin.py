@@ -5,10 +5,13 @@ from django.db import models
 from django.shortcuts import redirect
 from django.utils.module_loading import autodiscover_modules
 from django_eventbrite import admin as eb_admin
+from django_eventbrite.utils import load_event_attendees
 from django_object_actions import DjangoObjectActions
+from html2text import HTML2Text
+from import_export import resources, fields
+from import_export.admin import ExportMixin
 from pagedown.widgets import AdminPagedownWidget
 import django_eventbrite
-from django_eventbrite.utils import load_event_attendees
 
 class AsylumAdminSite(admin.AdminSite):
     site_header = "Artisan's Asylum Courses"
@@ -199,14 +202,6 @@ class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     make_session.short_description='Create session of course'
     objectactions = ('make_session',)
 
-def make_courses(modeladmin, request, queryset):
-    for event in queryset:
-        c=Course()
-        c.set_from_event(event)
-        c.save()
-
-make_courses.description='Convert Event into a Course'
-
 @admin.register(TemplateText, site=admin_site)
 class TemplateTextAdmin(admin.ModelAdmin):
     list_display = (
@@ -249,13 +244,44 @@ class AttendeeInline(ReadonlyAdminMixin, admin.StackedInline):
         'eb_id',
         'event',
     )
+
+def make_courses(modeladmin, request, queryset):
+    for event in queryset:
+        c=Course()
+        c.set_from_event(event)
+        c.save()
+
+make_courses.description='Convert Event into a Course'
+
+import csv
+from django.http import HttpResponse
+
+def export_csv(modeladmin, request, queryset):
+   response = HttpResponse(content_type='text/csv')
+   response['Content-Disposition'] = 'attachment; filename="events-export.csv"'
+   writer = csv.writer(response)
+   for event in queryset:
+       writer
+
+class EventResource(resources.ModelResource):
+    quantity_sold = fields.Field()
+    h=HTML2Text()
+    def dehydrate_quantity_sold(self, event):
+        return event.quantity_sold()
+    def dehydrate_description(self, event):
+        return self.h.handle(event.description)
+    class Meta:
+        model = django_eventbrite.models.Event
+        #exclude = ('description',)
+
 @admin.register(django_eventbrite.models.Event, site=admin_site)
-class EventAdmin(ReadonlyAdminMixin, DjangoObjectActions, eb_admin.EventAdmin):
+class EventAdmin(ExportMixin, ReadonlyAdminMixin, DjangoObjectActions, eb_admin.EventAdmin):
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
     actions=[make_courses]
     inlines=[AttendeeInline]
+    resource_class = EventResource
     def make_course(self, request, obj):
         c=Course()
         c.set_from_event(obj)

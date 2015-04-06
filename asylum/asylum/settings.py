@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'asylum.classes',
     'markdown_deux',
     'django_object_actions',
+    'import_export',
 )
 
 MIDDLEWARE_CLASSES = (
