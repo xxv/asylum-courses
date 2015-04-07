@@ -72,12 +72,20 @@ class Room(models.Model):
     def __str__(self):
         return self.name
 
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
 class AbsCourse(models.Model):
     MATERIAL_COST_COLLECTION = (
         ('ticket', 'included in ticket price'),
         ('instructor', 'collected by instructor at first class'),
     )
     name = models.CharField(max_length=255)
+    blurb = models.TextField(help_text='This should be approximately one paragraph and will be displayed on the website.')
     description = models.TextField()
     instructors = models.ManyToManyField(Instructor)
 
@@ -92,7 +100,9 @@ class AbsCourse(models.Model):
             blank=True,
             help_text='a quiet room, a projector, the availability of certain tools, student-purchased consumables, etc.')
     room = models.ManyToManyField(Room, null=True)
+    category = models.ManyToManyField(Category, null=True)
     number_of_meetings = models.PositiveSmallIntegerField(default=1)
+    instructor_hours = models.PositiveSmallIntegerField('Instructor Hours', default=0)
     min_enrollment = models.PositiveSmallIntegerField('Minimum enrollment', default=0)
     max_enrollment = models.PositiveSmallIntegerField('Maximum enrollment')
     ticket_price = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
