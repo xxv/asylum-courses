@@ -250,8 +250,12 @@ def make_courses(modeladmin, request, queryset):
         c=Course()
         c.set_from_event(event)
         c.save()
+make_courses.short_description='Convert Event into a Course'
 
-make_courses.description='Convert Event into a Course'
+def load_attendees_queryset(modeladmin, request, queryset):
+    for event in queryset:
+        load_event_attendees(event.eb_id)
+load_attendees_queryset.short_description='Load Attendees'
 
 import csv
 from django.http import HttpResponse
@@ -265,11 +269,20 @@ def export_csv(modeladmin, request, queryset):
 
 class EventResource(resources.ModelResource):
     quantity_sold = fields.Field()
+    quantity_refunded = fields.Field()
+    quantity_canceled = fields.Field()
+    ticket_sales = fields.Field()
     h=HTML2Text()
     def dehydrate_quantity_sold(self, event):
         return event.quantity_sold()
     def dehydrate_description(self, event):
         return self.h.handle(event.description)
+    def dehydrate_quantity_refunded(self, event):
+        return event.quantity_refunded()
+    def dehydrate_quantity_canceled(self, event):
+        return event.quantity_canceled()
+    def dehydrate_ticket_sales(self, event):
+        return event.ticket_sales()
     class Meta:
         model = django_eventbrite.models.Event
         #exclude = ('description',)
@@ -279,7 +292,7 @@ class EventAdmin(ExportMixin, ReadonlyAdminMixin, DjangoObjectActions, eb_admin.
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    actions=[make_courses]
+    actions=[make_courses, load_attendees_queryset]
     inlines=[AttendeeInline]
     resource_class = EventResource
     def make_course(self, request, obj):
