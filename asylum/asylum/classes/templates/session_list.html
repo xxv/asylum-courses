@@ -1,0 +1,12 @@
+{% load markdown_deux_tags %}
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    {% for session in sessions %}
+    <h2>{{ session.name }}</h2>
+    <p>{{ session.blurb|markdown }}</p>
+    {% endfor %}
+  </body>
+</html>
