@@ -96,15 +96,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR,"asylum/static/"),
-    )
+# Weeks start on Monday.
+FIRST_DAY_OF_WEEK = 1
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.7/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = '/home/steve/work/asylum/classes/2015_django/src/asylum/static'
 
 try:
     from .local_settings import *
