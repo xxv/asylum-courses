@@ -4,9 +4,12 @@
   <head>
   </head>
   <body>
-    {% for session in sessions %}
+    {% for category in categories %}
+    <h1>{{ category.name }}</h1>
+    {% for session in category.session_set.all %}
     <h2>{{ session.name }}</h2>
-    <p>{{ session.blurb|markdown }}</p>
+    {{ session.blurb|markdown }}
+    {% endfor %}
     {% endfor %}
   </body>
 </html>
