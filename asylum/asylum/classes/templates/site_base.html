@@ -1,0 +1,14 @@
+{% load staticfiles i18n %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% if site_name %}{{ site_name }} : {% endif %}{% block head_title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static "asylum/css/site.css" %}" type="text/css" />
+      {% block extra_head %}
+      {% endblock %}
+  </head>
+  <body>
+      {% block content %}
+      {% endblock %}
+  </body>
+</html>

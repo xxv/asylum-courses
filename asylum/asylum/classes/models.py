@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.core import validators
 from django.db import models
-from django_eventbrite.models import Event
+from django_eventbrite.models import Event as EBEvent
+from schedule.models import Event as CalEvent
 from djmoney.models.fields import MoneyField
 from permission import add_permission_logic
 from permission.logics import AuthorPermissionLogic
@@ -176,8 +177,9 @@ class Session(AbsCourse):
         (STATE_CANCELED, 'Canceled'),
     )
     course = models.ForeignKey(Course)
-    event = models.OneToOneField(Event, null=True)
+    event = models.OneToOneField(EBEvent, null=True)
     state = models.CharField(max_length=10, default=STATE_DRAFT, choices=STATES)
+    calendar_event = models.OneToOneField(CalEvent, null=True)
 
     def eb_id(self):
         if not self.event:
@@ -219,6 +221,20 @@ class Session(AbsCourse):
         if event.tickets:
             self.ticket_price = event.tickets[0].cost
         self.event = event
+    def save(self):
+        # twiddle the calendar here
+        if self.calendar_event:
+            self.calendar_event.title = self.name
+            self.calendar_event.save()
+        super(Session, self).save()
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+        return reverse('asylum.classes.views.session_item', args=[str(self.id)])
+    def get_occurrences(self):
+        if not self.calendar_event:
+            return None
+        cal = self.calendar_event
+        return cal.get_occurrences(cal.start, cal.end_recurring_period)
 
     class Meta:
         permissions = (

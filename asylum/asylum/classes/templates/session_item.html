@@ -1,0 +1,45 @@
+{% extends "site_base.html" %}
+{% load markdown_deux_tags %}
+{% block content %}
+<h1>“{{ session.name }}” Preview</h1>
+    <section>
+    <h1>State</h1>
+    <p>{{ session.get_state_display }}</p>
+    </section>
+
+    <section>
+    <h1>Title</h1>
+    <p>{{ session.name }}</p>
+    </section>
+
+    <section>
+    <h1>Instructor(s)</h1>
+    <p>{{ session.instructor_names }}</p>
+    </section>
+
+    <section>
+    <h1>Dates</h1>
+    <ul>
+    {% for occurrence in session.get_occurrences %}
+    <li>Session {{ forloop.counter }}: {{ occurrence.start|date:"l, N j" }}, {{ occurrence.start|time }} – {{ occurrence.end|time }}{% if occurrence.description %} ({{ occurrence.description }}){% endif %}</li>
+    {% endfor %}
+    </ul>
+    </section>
+
+    <section>
+        <h1>Website Blurb</h1>
+        {{ blurb|markdown }}
+    </section>
+
+    <section>
+        <h1>Category</h1>
+        {% for category in session.category.all %}
+        <p>{{ category.name }}</p>
+        {% endfor %}
+    </section>
+
+    <section>
+    <h1>Description</h1>
+    {{ description|markdown }}
+    </section>
+{% endblock %}

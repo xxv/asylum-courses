@@ -1,9 +1,6 @@
+{% extends "site_base.html" %}
 {% load markdown_deux_tags %}
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
+{% block content %}
     {% for category in categories %}
     <h1>{{ category.name }}</h1>
     {% for session in category.session_set.all %}
@@ -11,5 +8,4 @@
     {{ session.blurb|markdown }}
     {% endfor %}
     {% endfor %}
-  </body>
-</html>
+{% endblock %}
