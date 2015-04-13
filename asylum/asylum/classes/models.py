@@ -18,6 +18,7 @@ class Person(models.Model):
         ('sms', 'text message'),
     )
     name = models.CharField(max_length=200)
+    asylum_name = models.CharField(max_length=200, help_text='their handle, if any. How the person wishes to be publicly addressed in association with the Asylum', blank=True, null=True)
     user = models.OneToOneField(User, null=True, blank=True)
     phone_number = PhoneNumberField(blank=True)
     prefered_contact_method = models.CharField(max_length=10, default='email', choices=CONTACT_METHOD_TYPES)
@@ -28,8 +29,14 @@ class Person(models.Model):
             return self.user.email
         return None
 
-    def __str__(self):
+    @property
+    def name_display(self):
+        if self.asylum_name:
+            return "{0} ({1})".format(self.asylum_name, self.name)
         return self.name
+
+    def __str__(self):
+        return self.name_display
 
     class Meta:
         verbose_name_plural='People'
@@ -113,7 +120,7 @@ class AbsCourse(models.Model):
     material_cost_collection = models.CharField(max_length=10, choices = MATERIAL_COST_COLLECTION, null=True, blank=True)
 
     def instructor_names(self):
-        return ", ".join(map(lambda i: i.name, self.instructors.all()))
+        return ", ".join(map(lambda i: i.name_display, self.instructors.all()))
     instructor_names.short_description='Instructors'
 
     def __str__(self):

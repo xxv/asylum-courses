@@ -85,7 +85,7 @@ class InstructorAdmin(PersonAdmin):
             models.TextField: {'widget': AdminPagedownWidget },
     }
     list_display = (
-        'name',
+        '__str__',
         'email',
         'phone_number',
     )
@@ -143,6 +143,7 @@ class AbsCourseAdmin(ObjPermModelAdmin):
         'name',
         'description',
         'instructors__name',
+        'instructors__asylum_name',
         )
 
 @admin.register(Session, site=admin_site)
