@@ -5,7 +5,7 @@ from django.db import models
 from django.shortcuts import redirect
 from django.utils.module_loading import autodiscover_modules
 from django_eventbrite import admin as eb_admin
-from django_eventbrite.utils import load_event_attendees
+from django_eventbrite.utils import load_event_attendees, load_event
 from django_object_actions import DjangoObjectActions
 from html2text import HTML2Text
 from import_export import resources, fields
@@ -254,15 +254,18 @@ class AttendeeInline(ReadonlyAdminMixin, admin.StackedInline):
 
 def make_courses(modeladmin, request, queryset):
     for event in queryset:
-        c=Course()
-        c.set_from_event(event)
-        c.save()
+        modeladmin.make_course(request, event)
 make_courses.short_description='Convert Event into a Course'
 
-def load_attendees_queryset(modeladmin, request, queryset):
-    for event in queryset:
+def load_attendees_queryset(modeladmin, request, events):
+    for event in events:
         load_event_attendees(event.eb_id)
 load_attendees_queryset.short_description='Load Attendees'
+
+def load_events_queryset(modeladmin, request, events):
+    for event in events:
+        load_event(event.eb_id)
+load_events_queryset.short_description='Reload Events'
 
 import csv
 from django.http import HttpResponse
@@ -299,7 +302,7 @@ class EventAdmin(ExportMixin, ReadonlyAdminMixin, DjangoObjectActions, eb_admin.
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    actions=[make_courses, load_attendees_queryset]
+    actions=[make_courses, load_attendees_queryset, load_events_queryset]
     inlines=[AttendeeInline]
     resource_class = EventResource
     def make_course(self, request, obj):
