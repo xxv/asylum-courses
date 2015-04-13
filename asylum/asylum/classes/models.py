@@ -175,18 +175,18 @@ class Course(AbsCourse):
 
 class Session(AbsCourse):
     STATE_DRAFT = 'draft'
-    STATE_UNAPPROVED = 'unapproved'
+    STATE_NEEDS_APPROVAL = 'needs_approval'
     STATE_PUBLIC = 'public'
     STATE_CANCELED = 'canceled'
     STATES = (
         (STATE_DRAFT, 'Draft'),
-        (STATE_UNAPPROVED, 'Needs Approval'),
+        (STATE_NEEDS_APPROVAL, 'Needs Approval'),
         (STATE_PUBLIC, 'Public'),
         (STATE_CANCELED, 'Canceled'),
     )
     course = models.ForeignKey(Course)
     event = models.OneToOneField(EBEvent, null=True)
-    state = models.CharField(max_length=10, default=STATE_DRAFT, choices=STATES)
+    state = models.CharField(max_length=20, default=STATE_DRAFT, choices=STATES)
     calendar_event = models.OneToOneField(CalEvent, null=True)
 
     def eb_id(self):
@@ -200,12 +200,12 @@ class Session(AbsCourse):
 
     def submit_for_approval(self, request):
         if self.can_submit_for_approval(request):
-            self.state = self.STATE_UNAPPROVED
+            self.state = self.STATE_NEEDS_APPROVAL
             self.save()
 
     def can_publish(self, request):
         has_perm = request.user.has_perm('classes.change_session_state')
-        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_UNAPPROVED)
+        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_NEEDS_APPROVAL)
 
     def publish(self, request):
         if self.can_publish(request):
@@ -215,7 +215,7 @@ class Session(AbsCourse):
 
     def can_cancel(self, request):
         has_perm = request.user.has_perm('classes.change_session_state')
-        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_UNAPPROVED, self.STATE_PUBLIC)
+        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_NEEDS_APPROVAL, self.STATE_PUBLIC)
 
     def cancel(self, request):
         if self.can_cancel(request):
