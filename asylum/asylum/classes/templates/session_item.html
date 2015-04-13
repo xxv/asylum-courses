@@ -19,11 +19,27 @@
 
     <section>
     <h1>Dates</h1>
+    {% with occurrences=session.get_occurrences %}
+    {% if not occurrences %}
+    <p>No dates scheduled.</p>
+    {% endif %}
     <ul>
-    {% for occurrence in session.get_occurrences %}
+    {% for occurrence in occurrences %}
     <li>Session {{ forloop.counter }}: {{ occurrence.start|date:"l, N j" }}, {{ occurrence.start|time }} – {{ occurrence.end|time }}{% if occurrence.description %} ({{ occurrence.description }}){% endif %}</li>
     {% endfor %}
     </ul>
+    {% endwith %}
+    </section>
+
+    <section>
+        <h1>Costs</h1>
+
+        <h2>Ticket Price</h2>
+        <p>{{ session.ticket_price }}</p>
+
+        <h2>Material Cost</h2>
+        <p>{{ session.material_cost }}</p>
+        <p>{{ session.material_cost_collection }}</p>
     </section>
 
     <section>
