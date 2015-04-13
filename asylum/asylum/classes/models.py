@@ -24,6 +24,7 @@ class Person(models.Model):
     prefered_contact_method = models.CharField(max_length=10, default='email', choices=CONTACT_METHOD_TYPES)
     emergency_contact = models.ForeignKey('Person', null=True, blank=True)
 
+    @property
     def email(self):
         if self.user:
             return self.user.email
@@ -147,8 +148,8 @@ class Course(AbsCourse):
         h=HTML2Text()
         self.description = h.handle(event.description)
         self.max_enrollment = event.capacity
-        if event.tickets:
-            self.ticket_price = event.tickets.all()[0].cost
+        if event.tickets.count() > 0:
+            self.ticket_price = event.tickets.first().cost
 
     def create_session(self):
         session = Session()
