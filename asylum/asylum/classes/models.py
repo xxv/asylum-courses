@@ -10,6 +10,7 @@ from permission.logics import CollaboratorsPermissionLogic
 from phonenumber_field.modelfields import PhoneNumberField
 from html2text import HTML2Text
 from markdown_deux import markdown
+from datetime import timedelta
 
 class Person(models.Model):
     CONTACT_METHOD_TYPES = (
@@ -112,8 +113,8 @@ class AbsCourse(models.Model):
             help_text='a quiet room, a projector, the availability of certain tools, student-purchased consumables, etc.')
     room = models.ManyToManyField(Room, null=True)
     category = models.ManyToManyField(Category, null=True)
-    number_of_meetings = models.PositiveSmallIntegerField(default=1)
-    instructor_hours = models.PositiveSmallIntegerField('Instructor Hours', default=0)
+    number_of_meetings = models.PositiveSmallIntegerField(default=1, help_text='The number of times this course meets')
+    instructor_hours = models.PositiveSmallIntegerField('Instructor Hours', default=0, help_text='The number of billed instructor hours')
     min_enrollment = models.PositiveSmallIntegerField('Minimum enrollment', default=0)
     max_enrollment = models.PositiveSmallIntegerField('Maximum enrollment')
     ticket_price = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
@@ -185,7 +186,7 @@ class Session(AbsCourse):
         (STATE_CANCELED, 'Canceled'),
     )
     course = models.ForeignKey(Course)
-    event = models.OneToOneField(EBEvent, null=True)
+    event = models.OneToOneField(EBEvent, null=True, blank=True)
     state = models.CharField(max_length=20, default=STATE_DRAFT, choices=STATES)
     calendar_event = models.OneToOneField(CalEvent, null=True)
 
@@ -229,20 +230,29 @@ class Session(AbsCourse):
         if event.tickets:
             self.ticket_price = event.tickets[0].cost
         self.event = event
+
     def save(self):
         # twiddle the calendar here
         if self.calendar_event:
             self.calendar_event.title = self.name
             self.calendar_event.save()
         super(Session, self).save()
+
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
         return reverse('asylum.classes.views.session_item', args=[str(self.id)])
+
     def get_occurrences(self):
-        if not self.calendar_event:
-            return None
         cal = self.calendar_event
-        return cal.get_occurrences(cal.start, cal.end_recurring_period)
+        if not cal:
+            return None
+
+        # We don't support infinite events for this
+        if not cal.end_recurring_period and cal.rule:
+            return None
+
+        # the offsets here are to account for exact overlaps
+        return cal.get_occurrences(cal.start - timedelta(1), (cal.end_recurring_period or cal.end) + timedelta(1))
 
     class Meta:
         permissions = (

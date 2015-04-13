@@ -73,6 +73,7 @@ class ObjPermModelAdmin(admin.ModelAdmin):
 class PersonAdmin(ObjPermModelAdmin):
     search_fields = (
         'name',
+        'asylum_name',
         'phone_number',
         )
     permissioned_fields = (
@@ -91,6 +92,7 @@ class InstructorAdmin(PersonAdmin):
     )
     search_fields = (
         'name',
+        'asylum_name',
         'bio',
         'phone_number',
         'user__username',
@@ -135,30 +137,68 @@ class RoomAdmin(admin.ModelAdmin):
     }
 
 class AbsCourseAdmin(ObjPermModelAdmin):
-    list_display = ('name', 'instructor_names')
     formfield_overrides = {
             models.TextField: {'widget': AdminPagedownWidget },
     }
-    search_fields = (
-        'name',
-        'description',
-        'instructors__name',
-        'instructors__asylum_name',
-        )
+    def instructor_names(self, obj):
+        return obj.instructor_names()
+    instructor_names.short_description='Instructors'
+    instructor_names.admin_order_field='instructors__name'
+
+    def categories(self, obj):
+        return ", ".join(map(lambda c: c.name, obj.category.all()))
+    categories.admin_order_field='category__name'
+
+    def rooms(self, obj):
+        return ", ".join(map(lambda r: r.name, obj.room.all()))
+    rooms.admin_order_field='room__name'
 
 @admin.register(Session, site=admin_site)
 class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
-    readonly_fields = ('event',)
     permissioned_fields = (
         ('classes.change_session_state', ('state',)),
     )
     list_display = (
         'name',
         'instructor_names',
+        'start_date',
+        'end_date',
         'eb_id',
         'state',
+        'number_of_meetings',
+        'number_of_sessions',
     )
+    search_fields = (
+        'name',
+        'description',
+        'blurb',
+        'instructors__name',
+        'instructors__asylum_name',
+        'category__name',
+        'room__name',
+    )
+    list_filter = (
+        'state',
+        'calendar_event__start',
+    )
+
     objectactions = ('submit_for_approval', 'publish', 'cancel')
+
+    def end_date(self, obj):
+        """The end time of the last meeting of this session.
+
+        This is computed and could potentially be quite expensive for things
+        that repeat many times. In reality, that should be pretty unusual.
+        However the database-based sort can't use this info, so it filters on
+        the end recurring period, which may be inaccurate. Still, it's better
+        than not being able to sort at all.
+        """
+        occurrences = obj.get_occurrences()
+        if not occurrences:
+           return None
+        return occurrences[-1].end
+    end_date.admin_order_field='calendar_event__end_recurring_period'
+
     def get_object_actions(self, request, context, **kwargs):
         objectactions = []
         if 'original' in context:
@@ -170,6 +210,16 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
             if obj.can_cancel(request):
                 objectactions.append('cancel')
         return objectactions
+
+    def start_date(self, obj):
+        if not obj.calendar_event:
+            return None
+        return obj.calendar_event.start
+    start_date.admin_order_field='calendar_event__start'
+
+    def number_of_sessions(self, obj):
+        return len(obj.get_occurrences() or [])
+    number_of_sessions.short_description='Scheduled sessions'
 
     def submit_for_approval(self, request, obj):
         obj.submit_for_approval(request)
@@ -196,6 +246,30 @@ class CourseAdmin(DjangoObjectActions, AbsCourseAdmin):
     permissioned_fields = (
         ('classes.change_course_state', ('state',)),
     )
+    list_filter = (
+        'state',
+    )
+    list_display = (
+        'name',
+        'instructor_names',
+        'categories',
+        'rooms',
+        'number_of_meetings',
+        'instructor_hours',
+        'ticket_price',
+        'min_enrollment',
+        'max_enrollment',
+        )
+    search_fields = (
+        'name',
+        'description',
+        'blurb',
+        'instructors__name',
+        'instructors__asylum_name',
+        'category__name',
+        'room__name',
+        )
+
     def make_session(self, request, obj):
         session=obj.create_session()
         return redirect('admin:classes_session_change', session.id)
@@ -244,7 +318,6 @@ class ReadonlyAdminMixin(object):
                 [field.name for field in self.opts.local_fields] +
                 [field.name for field in self.opts.local_many_to_many]
             ))
-
 
 class AttendeeInline(ReadonlyAdminMixin, admin.StackedInline):
     model = django_eventbrite.models.Attendee
@@ -296,7 +369,6 @@ class EventResource(resources.ModelResource):
         return event.ticket_sales()
     class Meta:
         model = django_eventbrite.models.Event
-        #exclude = ('description',)
 
 @admin.register(django_eventbrite.models.Event, site=admin_site)
 class EventAdmin(ExportMixin, ReadonlyAdminMixin, DjangoObjectActions, eb_admin.EventAdmin):
