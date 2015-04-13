@@ -14,7 +14,10 @@
 
     <section>
     <h1>Instructor(s)</h1>
-    <p>{{ session.instructor_names }}</p>
+    {% for instructor in session.instructors.all %}
+    <h2>{{ instructor.name_display }}</h2>
+        {{ instructor.bio|markdown }}
+    {% endfor %}
     </section>
 
     <section>
