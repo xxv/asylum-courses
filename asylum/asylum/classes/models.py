@@ -114,7 +114,7 @@ class AbsCourse(models.Model):
     room = models.ManyToManyField(Room, null=True)
     category = models.ManyToManyField(Category, null=True)
     number_of_meetings = models.PositiveSmallIntegerField(default=1, help_text='The number of times this course meets')
-    instructor_hours = models.PositiveSmallIntegerField('Instructor Hours', default=0, help_text='The number of billed instructor hours')
+    instructor_hours = models.DecimalField('Instructor Hours', max_digits=4, decimal_places=2, default=0, help_text='The number of billed instructor hours')
     min_enrollment = models.PositiveSmallIntegerField('Minimum enrollment', default=0)
     max_enrollment = models.PositiveSmallIntegerField('Maximum enrollment')
     ticket_price = MoneyField(max_digits=6, decimal_places=2, default_currency='USD')
