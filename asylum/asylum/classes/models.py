@@ -92,9 +92,11 @@ class Category(models.Model):
         verbose_name_plural='Categories'
 
 class AbsCourse(models.Model):
+    MATERIAL_COST_INCLUDED_IN_TICKET = 'ticket'
+    MATERIAL_COST_COLLECTED_BY_INSTRUCTOR = 'instructor'
     MATERIAL_COST_COLLECTION = (
-        ('ticket', 'included in ticket price'),
-        ('instructor', 'collected by instructor at first class'),
+        (MATERIAL_COST_INCLUDED_IN_TICKET, 'included in ticket price'),
+        (MATERIAL_COST_COLLECTED_BY_INSTRUCTOR, 'collected by instructor at first class'),
     )
     name = models.CharField(max_length=255)
     blurb = models.TextField(help_text='This should be approximately one paragraph and will be displayed on the website.')
