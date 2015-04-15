@@ -177,13 +177,15 @@ class Course(AbsCourse):
         )
 
 class Session(AbsCourse):
+    STATE_CANCELED = 'canceled'
     STATE_DRAFT = 'draft'
     STATE_NEEDS_APPROVAL = 'needs_approval'
     STATE_PUBLIC = 'public'
-    STATE_CANCELED = 'canceled'
+    STATE_READY_TO_PUBLISH = 'ready'
     STATES = (
         (STATE_DRAFT, 'Draft'),
         (STATE_NEEDS_APPROVAL, 'Needs Approval'),
+        (STATE_READY_TO_PUBLISH, 'Ready to Publish'),
         (STATE_PUBLIC, 'Public'),
         (STATE_CANCELED, 'Canceled'),
     )
@@ -208,12 +210,16 @@ class Session(AbsCourse):
 
     def can_publish(self, request):
         has_perm = request.user.has_perm('classes.change_session_state')
-        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_NEEDS_APPROVAL)
+        return has_perm and self.state in (self.STATE_DRAFT, self.STATE_NEEDS_APPROVAL, self.STATE_READY_TO_PUBLISH)
 
     def publish(self, request):
+        # this needs to be imported here due to cyclic dependencies
+        from asylum.classes.utils import publish_to_eb
+
         if self.can_publish(request):
-            self.state = self.STATE_PUBLIC
+            self.state = self.STATE_READY_TO_PUBLISH
             self.save()
+            publish_to_eb(self)
             # publish to eventbrite here
 
     def can_cancel(self, request):
