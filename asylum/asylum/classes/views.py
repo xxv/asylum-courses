@@ -1,18 +1,8 @@
-from asylum.classes.models import Session, Category, TemplateText
+from asylum.classes.utils import TemplateTextContext
+from asylum.classes.models import Session, Category
 from django.shortcuts import render
 from django.http import Http404
-from django.template import Template, Context
-
-class TemplateTextContext(Context):
-    def __init__(self):
-        super(TemplateTextContext, self).__init__()
-        self.load_text_templates()
-
-    def load_text_templates(self):
-        temps = {}
-        for template in TemplateText.objects.all():
-            temps[template.keyword] = template.text
-        self.update(temps)
+from django.template import Template
 
 def session_list(request):
     categories = Category.objects.order_by('name')
