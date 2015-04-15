@@ -5,10 +5,10 @@ from django.template import Template, Context
 
 class TemplateTextContext(Context):
     def __init__(self):
-        super(TemplateTextContext, self).__init__(self)
-        self.load_templates()
+        super(TemplateTextContext, self).__init__()
+        self.load_text_templates()
 
-    def load_templates(self):
+    def load_text_templates(self):
         temps = {}
         for template in TemplateText.objects.all():
             temps[template.keyword] = template.text
