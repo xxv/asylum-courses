@@ -1,16 +1,16 @@
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import validators
 from django.db import models
 from django_eventbrite.models import Event as EBEvent
-from schedule.models import Event as CalEvent
 from djmoney.models.fields import MoneyField
+from html2text import HTML2Text
+from markdown_deux import markdown
 from permission import add_permission_logic
 from permission.logics import AuthorPermissionLogic
 from permission.logics import CollaboratorsPermissionLogic
 from phonenumber_field.modelfields import PhoneNumberField
-from html2text import HTML2Text
-from markdown_deux import markdown
-from datetime import timedelta
+from schedule.models import Event as CalEvent
 
 class Person(models.Model):
     CONTACT_METHOD_TYPES = (
