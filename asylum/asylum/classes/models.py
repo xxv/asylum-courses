@@ -113,7 +113,7 @@ class AbsCourse(models.Model):
             help_text='a quiet room, a projector, the availability of certain tools, student-purchased consumables, etc.')
     room = models.ManyToManyField(Room, null=True)
     category = models.ManyToManyField(Category, null=True)
-    number_of_meetings = models.PositiveSmallIntegerField(default=1, help_text='The number of times this course meets')
+    number_of_meetings = models.PositiveSmallIntegerField('Meets',default=1, help_text='The number of times this course meets')
     instructor_hours = models.DecimalField('Instructor Hours', max_digits=4, decimal_places=2, default=0, help_text='The number of billed instructor hours')
     min_enrollment = models.PositiveSmallIntegerField('Minimum enrollment', default=0)
     max_enrollment = models.PositiveSmallIntegerField('Maximum enrollment')

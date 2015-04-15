@@ -153,8 +153,21 @@ class AbsCourseAdmin(ObjPermModelAdmin):
         return ", ".join(map(lambda r: r.name, obj.room.all()))
     rooms.admin_order_field='room__name'
 
+
+def load_session_attendees_queryset(modeladmin, request, sessions):
+    for session in sessions:
+        if not session.event:
+            continue
+        print("Loading event {0}".format(session.event.eb_id))
+        load_event_attendees(session.event.eb_id)
+load_session_attendees_queryset.short_description='Update Attendees'
+
+
 @admin.register(Session, site=admin_site)
 class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
+    actions = (
+        load_session_attendees_queryset,
+    )
     permissioned_fields = (
         ('classes.change_session_state', ('state',)),
     )
@@ -165,8 +178,13 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
         'end_date',
         'eb_id',
         'state',
-        'number_of_meetings',
-        'number_of_sessions',
+        'ticket_sales',
+        'eventbrite_fees',
+        '_min_enrollment',
+        '_max_enrollment',
+        'quantity_sold',
+        'quantity_refunded',
+        'quantity_canceled',
     )
     search_fields = (
         'name',
@@ -198,6 +216,46 @@ class SessionAdmin(DjangoObjectActions, AbsCourseAdmin):
            return None
         return occurrences[-1].end
     end_date.admin_order_field='calendar_event__end_recurring_period'
+
+    def _max_enrollment(self, obj):
+        return obj.max_enrollment
+    _max_enrollment.short_description='Cap'
+    _max_enrollment.admin_order_field='max_enrollment'
+
+    def _min_enrollment(self, obj):
+        return obj.min_enrollment
+    _min_enrollment.short_description='Min'
+    _min_enrollment.admin_order_field='min_enrollment'
+
+    def eventbrite_fees(self, obj):
+        if not obj.event:
+            return None
+        return obj.event.eventbrite_fees()
+    eventbrite_fees.short_description='EB fees'
+
+    def ticket_sales(self, obj):
+        if not obj.event:
+            return None
+        return obj.event.ticket_sales()
+    ticket_sales.short_description='Sales'
+
+    def quantity_sold(self, obj):
+        if not obj.event:
+            return 0
+        return obj.event.quantity_sold()
+    quantity_sold.short_description='Sold'
+
+    def quantity_refunded(self, obj):
+        if not obj.event:
+            return 0
+        return obj.event.quantity_refunded()
+    quantity_refunded.short_description='Refunds'
+
+    def quantity_canceled(self, obj):
+        if not obj.event:
+            return 0
+        return obj.event.quantity_canceled()
+    quantity_canceled.short_description='Cancels'
 
     def get_object_actions(self, request, context, **kwargs):
         objectactions = []
