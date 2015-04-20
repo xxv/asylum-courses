@@ -3,7 +3,10 @@
 <html>
   <head>
     <title>{% if site_name %}{{ site_name }} : {% endif %}{% block head_title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static "asylum/css/asylumfonts.css" %}" type="text/css" />
     <link rel="stylesheet" href="{% static "asylum/css/site.css" %}" type="text/css" />
+    <link rel="stylesheet" href="{% static "asylum/css/asylum.css" %}" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700,300' rel='stylesheet' type='text/css'>
       {% block extra_head %}
       {% endblock %}
   </head>

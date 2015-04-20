@@ -189,7 +189,7 @@ class Session(AbsCourse):
         (STATE_PUBLIC, 'Public'),
         (STATE_CANCELED, 'Canceled'),
     )
-    course = models.ForeignKey(Course)
+    course = models.ForeignKey(Course, related_name='sessions')
     event = models.OneToOneField(EBEvent, null=True, blank=True)
     state = models.CharField(max_length=20, default=STATE_DRAFT, choices=STATES)
     calendar_event = models.OneToOneField(CalEvent, null=True)

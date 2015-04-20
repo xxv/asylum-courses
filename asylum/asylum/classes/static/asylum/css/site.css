@@ -1,17 +1,40 @@
-        section {
-            border: 2px solid #55a;
-            margin: 1em;
-        }
-        section > p, section > img, section > div {
-            margin-left: 0.5em;
-            margin-right: 0.5em;
-        }
+.session_item section {
+    border: 2px solid #55a;
+    margin: 1em;
+}
+.session_item section > p, .session_item section > img, .session_item section > div {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
 
-        section > h1 {
-            padding: 0.5em;
-            margin: 0;
-            background-color: #006;
-            color: #fff;
-            font-size: 1.1em;
-        }
+.session_item section > h1 {
+    padding: 0.5em;
+    margin: 0;
+    background-color: #006;
+    color: #fff;
+    font-size: 1.1em;
+}
 
+.course_list .course_times {
+    font-style: italic;
+}
+
+.course_list h2 {
+    display: inline;
+}
+
+.course_list .course_blurb p {
+    display: inline;
+}
+
+.course_list .course {
+margin-top: 1em;
+
+}
+
+
+
+.course_list li {
+    list-style-type: square;
+    list-style-position: outside;
+    }

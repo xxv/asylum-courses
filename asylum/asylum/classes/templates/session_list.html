@@ -1,11 +1,27 @@
 {% extends "site_base.html" %}
-{% load markdown_deux_tags %}
+{% load markdown_deux_tags schedule_extra %}
 {% block content %}
+  <section class="course_list">
     {% for category in categories %}
     <h1>{{ category.name }}</h1>
-    {% for session in category.session_set.all %}
-    <h2>{{ session.name }}</h2>
-    {{ session.blurb|markdown }}
+      <ul>
+      {% for course in category.course_set.all %}
+      <li class="course">
+        <strong>{{ course.name }}</strong>
+        <span class="course_times">{% for session in course.sessions.all %}
+          {% if not forloop.first %}, {% endif %}
+          {% with occurrences=session.get_occurrences %}
+            {% with first=occurrences|first count=occurrences|length %}
+              {{ occurrences|daynames }}
+              {{ first|timerange }} <a href="{% if session.event.eb_url %}{{ session.event.eb_url }}{% else %}{% url 'admin:classes_session_change' session.id %}{% endif %}">{{ occurrences|daterange:"F j" }}</a>
+            {% endwith %}
+          {% endwith %}
+        {% endfor %}
+        </span>
+        — <span class="course_blurb">{{ course.blurb|markdown }}</span>
+      </li>
+        {% endfor %}
+        </ul>
     {% endfor %}
-    {% endfor %}
+  </section>
 {% endblock %}
