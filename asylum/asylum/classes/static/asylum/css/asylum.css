@@ -1,0 +1,51 @@
+body {
+color: #777;
+font-family: "Roboto",sans-serif;
+font-weight: 300;
+}
+
+strong {
+font-weight: 700;
+}
+
+p a, p a:visited {
+font-weight: 700;
+-webkit-transition-duration: 0.4s;
+-moz-transition-duration: 0.4s;
+-ms-transition-duration: 0.4s;
+-o-transition-duration: 0.4s;
+}
+
+p a:hover {
+font-weight: 700;
+text-decoration: underline;
+color: #dd171f;
+}
+
+a {
+-webkit-transition-duration: 0.4s;
+-moz-transition-duration: 0.4s;
+-ms-transition-duration: 0.4s;
+-o-transition-duration: 0.4s;
+color: #DD171F;
+text-decoration: none;
+}
+
+a:hover {
+color: #dd171f;
+text-decoration: none;
+
+}
+
+table tbody tr td {
+color: #545F64;
+border: 0px;
+border: none;
+}
+
+table tbody tr {
+border: 0px;
+border: none;
+
+}
+
