@@ -1,3 +1,4 @@
 *.sqlite3
 local_settings.py
 dev/
+__pycache__/
