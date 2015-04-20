@@ -11,10 +11,11 @@
         <span class="course_times">{% for session in course.sessions.all %}
           {% if not forloop.first %}, {% endif %}
           {% with occurrences=session.get_occurrences %}
+            {% if occurrences %}
             {% with first=occurrences|first count=occurrences|length %}
-              {{ occurrences|daynames }}
-              {{ first|timerange }} <a href="{% if session.event.eb_url %}{{ session.event.eb_url }}{% else %}{% url 'admin:classes_session_change' session.id %}{% endif %}">{{ occurrences|daterange:"F j" }}</a>
+              {{ first|timerange }} {{ occurrences|daynames }} <a href="{% if session.event.eb_url %}{{ session.event.eb_url }}{% else %}{% url 'admin:classes_session_change' session.id %}{% endif %}">{{ occurrences|daterange:"F j" }}</a>
             {% endwith %}
+            {% endif %}
           {% endwith %}
         {% endfor %}
         </span>
